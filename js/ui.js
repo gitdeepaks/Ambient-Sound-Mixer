@@ -71,4 +71,48 @@ export class UI {
       this.soundCardsContainer.appendChild(card);
     });
   }
+  //Update Play/pause button for indivudual card
+
+  updateSoundPlayButton(soundId, isPlaying) {
+    const card = document.querySelector(`[data-sound="${soundId}"]`);
+
+    if (card) {
+      const playBtn = card.querySelector('.play-btn');
+      const icon = playBtn.querySelector('i');
+
+      if (isPlaying) {
+        icon.classList.remove('fa-play');
+        icon.classList.add('fa-pause');
+        icon.classList.add('playing');
+      } else {
+        icon.classList.remove('fa-pause');
+        icon.classList.add('fa-play');
+        icon.classList.remove('playing');
+      }
+    }
+  }
+
+  //Update volume display for sound
+  updateVolumeDisplay(soundId, volume) {
+    const card = document.querySelector(`[data-sound="${soundId}"]`);
+
+    if (card) {
+      //update the number display
+      const volumeValue = card.querySelector('.volume-value');
+      if (volumeValue) {
+        volumeValue.textContent = volume;
+      }
+
+      //update volume bar visualization
+      const volumeBarFill = card.querySelector('.volume-bar-fill');
+      if (volumeBarFill) {
+        volumeBarFill.style.width = `${volume}%`;
+      }
+      //update slider position
+      const volumeSlider = card.querySelector('.volume-slider');
+      if (volumeSlider) {
+        volumeSlider.value = volume;
+      }
+    }
+  }
 }
