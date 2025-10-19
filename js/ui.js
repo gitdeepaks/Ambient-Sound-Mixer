@@ -63,6 +63,21 @@ export class UI {
 
     return card;
   }
+  //Create custom preset button
+  creteCustomPresetButton(name, presetId) {
+    const button = document.createElement('button');
+    button.className =
+      'custom-preset-btn bg-white/10 hover:bg-white/20 px-4 py-2 rounded-bg transition-all duration-300 relative group';
+    button.dataset.preset = presetId;
+    button.innerHTML = `<i class="fas fa-star mr-2 text-yellow-400"></i>
+    ${name}
+    <button type="button" class="delete-preset absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" data-preset="${presetId}">
+      <i class="fas fa-times text-xs text-white"></i>
+    </button>`;
+
+    return button;
+  }
+
   // render all sound cards
   renderSoundCards(sounds) {
     this.soundCardsContainer.innerHTML = '';
@@ -114,5 +129,67 @@ export class UI {
         volumeSlider.value = volume;
       }
     }
+  }
+  //update main play/pause button for all sounds
+  updateMainPlayPauseButton(isPlaying) {
+    const icon = this.playPauseButton.querySelector('i');
+    if (isPlaying) {
+      icon.classList.remove('fa-play');
+      icon.classList.add('fa-pause');
+    } else {
+      icon.classList.remove('fa-pause');
+      icon.classList.add('fa-play');
+    }
+  }
+
+  //reset all all UI elements to the default state
+
+  resetUI() {
+    const sliders = document.querySelectorAll('.volume-slider');
+    sliders.forEach((slider) => {
+      slider.value = 0;
+      const soundId = slider.dataset.sound;
+      this.updateVolumeDisplay(soundId, 0);
+    });
+
+    //Reset all play buttons to play state
+    const playButtons = document.querySelectorAll('.play-btn');
+    playButtons.forEach((button) => {
+      const icon = button.querySelector('i');
+      icon.classList.remove('fa-pause');
+      icon.classList.add('fa-play');
+    });
+
+    //Remove playing class from cards
+    const cards = document.querySelectorAll('.sound-card');
+    cards.forEach((card) => {
+      card.classList.remove('fa-playing');
+    });
+    //Reset main play/pause button
+    this.updateSoundPlayButton(false);
+
+    //reset master volume to 100%
+    this.masterVolumeSlider.value = 100;
+    this.masterVolumeValue.textContent = '100%';
+  }
+
+  // show save preset modal
+  showModal() {
+    this.modal.classList.remove('hidden');
+    this.modal.classList.add('flex');
+    document.getElementById('presetName').focus();
+  }
+
+  // hide modal
+  hideModal() {
+    this.modal.classList.add('hidden');
+    this.modal.classList.remove('flex');
+    document.getElementById('presetName').value = '';
+  }
+
+  // Add cutom preset to UI
+  adddCustomPreset(name, presetId) {
+    const button = this.creteCustomPresetButton(name, presetId);
+    this.customPresetsContainer.appendChild(button);
   }
 }

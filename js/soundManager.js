@@ -57,4 +57,30 @@ export class SoundManager {
     console.log(`Volume for ${soundId}: ${volume}`);
     return true;
   }
+  //play all sounds
+  playAll() {
+    for (const [soundId, audio] of this.audioElement) {
+      if (audio.paused) {
+        audio.play();
+      }
+    }
+    this.isPlaying = true;
+  }
+  pauseAll() {
+    for (const [soundId, audio] of this.audioElement) {
+      if (!audio.paused) {
+        audio.pause();
+      }
+    }
+    this.isPlaying = false;
+  }
+  stopAll() {
+    for (const [soundId, audio] of this.audioElement) {
+      if (!audio.paused) {
+        audio.pause();
+      }
+      audio.currentTime = 0; // reset the audio to the beginning
+    }
+    this.isPlaying = false;
+  }
 }
