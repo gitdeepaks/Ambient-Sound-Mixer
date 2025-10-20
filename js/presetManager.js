@@ -8,6 +8,11 @@ export class PresetManager {
     return stored ? JSON.parse(stored) : {};
   }
 
+  // load custom preset by ID
+  loadPreset(presetId) {
+    return this.customPresets[presetId] || null;
+  }
+
   //Save custom presets to localStorage
   saveCustompresets() {
     localStorage.setItem(
@@ -40,5 +45,14 @@ export class PresetManager {
     return Object.values(this.customPresets).some(
       (preset) => preset.name === name
     );
+  }
+  // Delete a custom preset
+  deletePreset(presetId) {
+    if (this.customPresets[presetId]) {
+      delete this.customPresets[presetId];
+      this.saveCustompresets();
+      return true;
+    }
+    return false;
   }
 }

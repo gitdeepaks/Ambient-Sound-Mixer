@@ -2,6 +2,7 @@ import { PresetManager } from './presetManager.js';
 import { sounds, defaultPresets } from './soundData.js';
 import { SoundManager } from './soundManager.js';
 import { UI } from './ui.js';
+import { Timer } from './timer.js';
 
 class AmbientMixer {
   //Initialize dependencies nad default state
@@ -10,7 +11,10 @@ class AmbientMixer {
     this.soundManager = new SoundManager();
     this.ui = new UI();
     this.presentManager = new PresetManager();
-    this.timer = null;
+    this.timer = new Timer(
+      () => this.onTimerComplete(),
+      (minutes, seconds) => this.ui.updateTimerDisplay(minutes, seconds)
+    );
     this.currentSoundState = {};
     this.masterVolume = 100;
     this.isInilized = false;
@@ -50,10 +54,23 @@ class AmbientMixer {
         const soundId = e.target.closest('.play-btn').dataset.sound;
         await this.toggleSound(soundId);
       }
+      // Check if delete button is clicked
+      if (e.target.closest('.delete-preset')) {
+        e.stopPropagation();
+        const presetId = e.target.closest('.delete-preset').dataset.preset;
+
+        this.deleteCustomPreset(presetId);
+
+        return;
+      }
       //check if a preset button was clicked.
       if (e.target.closest('.preset-btn')) {
         const presetKey = e.target.closest('.preset-btn').dataset.preset;
-        this.loadsPreset(presetKey);
+        this.loadPreset(presetKey);
+      }
+      if (e.target.closest('.custom-preset-btn')) {
+        const presetKey = e.target.closest('.custom-preset-btn').dataset.preset;
+        this.loadPreset(presetKey, true);
       }
     });
 
@@ -118,6 +135,27 @@ class AmbientMixer {
         }
       });
     }
+
+    // Timer Select
+    const timerSelect = document.getElementById('timerSelect');
+    if (timerSelect) {
+      timerSelect.addEventListener('change', (e) => {
+        const minutes = parseInt(e.target.value);
+        if (minutes > 0) {
+          this.timer.start(minutes);
+          console.log(`Timer started for ${minutes} minuted`);
+        } else {
+          this.timer.stop();
+        }
+      });
+    }
+
+    // Theme toggle
+    if (this.ui.themeToggle) {
+      this.ui.themeToggle.addEventListener('click', () => {
+        this.ui.toggleTheme();
+      });
+    }
   }
 
   // Load all sounds
@@ -154,6 +192,7 @@ class AmbientMixer {
       this.soundManager.setVolume(soundId, volume);
       await this.soundManager.playSound(soundId);
       // Update play button
+      this.currentSoundState[soundId] = 0;
       this.ui.updateSoundPlayButton(soundId, true);
     } else {
       this.soundManager.pauseSound(soundId);
@@ -267,6 +306,15 @@ class AmbientMixer {
     //reset the master volume to 100%
     this.masterVolume = 100;
 
+    // Reset timer
+    this.timer.stop();
+    if (this.ui.timerSelect) {
+      this.ui.timerSelect.value = '0';
+    }
+
+    // Reset active preset
+    this.ui.setActivePreset(null);
+
     //reset all sound states to 0
     sounds.forEach((sound) => {
       this.currentSoundState[sound.id] = 0;
@@ -276,8 +324,13 @@ class AmbientMixer {
     this.ui.resetUI();
   }
   //  Load a preset configuration
-  loadsPreset(presetKey) {
-    const preset = defaultPresets[presetKey];
+  loadPreset(presetKey, custom = false) {
+    let preset;
+    if (custom) {
+      preset = this.presentManager.loadPreset(presetKey);
+    } else {
+      preset = defaultPresets[presetKey];
+    }
 
     if (!preset) {
       console.error(`Preset ${presetKey} not found`);
@@ -314,6 +367,10 @@ class AmbientMixer {
     //update main play button state
     this.soundManager.isPlaying = true;
     this.ui.updateMainPlayPauseButton(true);
+    // Set Active preset
+    if (presetKey) {
+      this.ui.setActivePreset(presetKey);
+    }
   }
 
   // show save presetModal
@@ -360,6 +417,34 @@ class AmbientMixer {
 
     for (const [presetId, preset] of Object.entries(customPresets)) {
       this.ui.adddCustomPreset(preset.name, presetId);
+    }
+  }
+  // Delete custom preset
+  deleteCustomPreset(presetId) {
+    if (this.presentManager.deletePreset(presetId)) {
+      this.ui.removeCustompreset(presetId);
+      console.log(`Preset ${presetId} deleted`);
+    }
+  }
+  // Timer complete callback
+  onTimerComplete() {
+    // Stop all sounds
+    this.soundManager.pauseAll();
+    this.ui.updateMainPlayPauseButton(false);
+
+    // update the individual play buttons
+    sounds.forEach((sound) => {
+      this.ui.updateSoundPlayButton(sound.id, false);
+    });
+    // reset the timer dropdown
+    const timerSelect = document.getElementById('timerSelect');
+    if (timerSelect) {
+      timerSelect.value = '0';
+    }
+    // Clear and hide the timer display
+    if (this.ui.timerDisplay) {
+      this.ui.timerDisplay.textContent = '';
+      this.ui.timerDisplay.classList.add('hidden');
     }
   }
 }

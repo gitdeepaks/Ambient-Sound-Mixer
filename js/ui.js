@@ -192,4 +192,59 @@ export class UI {
     const button = this.creteCustomPresetButton(name, presetId);
     this.customPresetsContainer.appendChild(button);
   }
+
+  //Highlist Active preset
+  setActivePreset(presetKey) {
+    //remove active class from all buttons
+    document
+      .querySelectorAll('.preset-btn, .custom-preset-btn')
+      .forEach((btn) => {
+        btn.classList.remove('preset-active');
+      });
+    // Add active class to selected Presets
+    const activeButton = document.querySelector(
+      `.preset-btn[data-preset="${presetKey}"],.custom-preset-btn[data-preset="${presetKey}"] `
+    );
+    if (activeButton) {
+      activeButton.classList.add('preset-active');
+    }
+  }
+  // Remove Custom Preset from UI
+  removeCustompreset(presetId) {
+    const buttom = document.querySelector(
+      `.custom-preset-btn[data-preset="${presetId}"]`
+    );
+    if (buttom) {
+      buttom.remove();
+    }
+  }
+
+  // Update timer display
+  updateTimerDisplay(minutes, seconds) {
+    if (this.timerDisplay) {
+      if (minutes > 0 || seconds > 0) {
+        const formattedTime = `${minutes.toString().padStart(2, '0')}: ${seconds
+          .toString()
+          .padStart(2, '0')}`;
+        this.timerDisplay.textContent = formattedTime;
+        this.timerDisplay.classList.remove('hidden');
+      } else {
+        this.timerDisplay.classList.add('hidden');
+      }
+    }
+  }
+
+  // Toggle theme
+  toggleTheme() {
+    const body = document.body;
+    const icon = this.themeToggle.querySelector('i');
+
+    if (body.classList.contains('light-theme')) {
+      body.classList.remove('light-theme');
+      icon.classList.replace('fa-moon,', 'fa-sun');
+    } else {
+      body.classList.add('light-theme');
+      icon.classList.replace('fa-sun,', 'fa-moon');
+    }
+  }
 }
